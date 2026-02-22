@@ -1,0 +1,21 @@
+# Virtual environments
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Data
+real_data/*.json
+synthetic_data/*.json
+
+# speechocean762 repository
+speechocean762/
+
+# L2-ARCTIC repository
+l2arctic/
+
+# Temporary scripts
+real_data/stats_real.py
+synthetic_data/stats_synthetic.py

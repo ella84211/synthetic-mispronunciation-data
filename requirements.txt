@@ -1,1 +1,5 @@
 phonecodes
+datasets
+nltk
+g2p-en
+tqdm
