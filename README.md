@@ -9,6 +9,7 @@ pip install -r requirements.txt
 ```
 
 ## Preprocessing speechocean762 data
+
 Get the speechocean762 data
 ```
 git clone https://github.com/jimbozhang/speechocean762.git
@@ -28,10 +29,16 @@ Zhang, J., Zhang, Z., Wang, Y., Yan, Z., Song, Q., Huang, Y., Li, K., Povey, D.,
 https://github.com/jimbozhang/speechocean762
 
 ## Making the synthetic data
+
 Run the scripts to get and preprocess the data
 ```
 python synthetic_data/get_sentences.py
 python synthetic_data/make_ipa_transcriptions.py
 python synthetic_data/make_pronunciation_errors.py
-python synthetic_data/split_synthetic_data.py
 ```
+
+### visual_genome-simple-en data:
+
+This is the dataset of simple English sentences.
+
+https://huggingface.co/datasets/Jotschi/visual_genome-simple-en

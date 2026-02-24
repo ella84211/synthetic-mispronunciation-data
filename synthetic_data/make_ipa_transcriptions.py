@@ -28,11 +28,15 @@ for sentence in tqdm(data):
         "text": "",
         "words": []
     }
-    sentence = sentence["sentence"]
-    sentence = ''.join(c for c in sentence if c.isalnum() or c.isspace()).upper()
+    sentence = sentence["sentence"].upper()
+    sentence = "".join(c for c in sentence if (c == "'" or c.isspace() or c.isalnum()))
     sample["text"] = sentence
     for word in sentence.split(" "):
         word_sample = {"text": word, "phones": []}
+        if word.startswith("'"):
+            word = word[1:]
+        if word.endswith("'"):
+            word = word[:-1]
         word = word.lower()
         if word in arpabet:
             word = arpabet[word][0]

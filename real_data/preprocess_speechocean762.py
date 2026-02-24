@@ -9,7 +9,10 @@ print(f"Reading data from {INPUT_FILE}")
 with open(INPUT_FILE, "r", encoding="utf-8") as file:
     data = json.load(file)
 
-convert_phone = lambda phone: phonecodes.arpabet2ipa(phone.rstrip("012"), "eng")
+def convert_phone(phone):
+    if phone == "<DEL>": return phone
+    if phone == "<unk>": return phone.upper()
+    return phonecodes.arpabet2ipa(phone.rstrip("012"), "eng")
 
 print(f"Processing data...")
 processed_data = []
