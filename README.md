@@ -34,7 +34,6 @@ Run the scripts to get and preprocess the data
 ```
 python synthetic_data/get_sentences.py
 python synthetic_data/make_ipa_transcriptions.py
-python synthetic_data/make_pronunciation_errors.py
 ```
 
 ### visual_genome-simple-en data:
