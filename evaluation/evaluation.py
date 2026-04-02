@@ -540,8 +540,8 @@ def _print_report(results: dict):
         n = max(m["n_samples"], 1)
         print(f"  Samples evaluated : {m['n_samples']}")
         print(f"  Positive (error)  : {m['n_positive']} ({100 * m['n_positive'] / n:.1f}%)")
-        print(f"  Accuracy          : {_fmt(m['accuracy'])}")
-        print(f"  Balanced Accuracy : {_fmt(m['balanced_accuracy'])}")
+        # print(f"  Accuracy          : {_fmt(m['accuracy'])}")
+        # print(f"  Balanced Accuracy : {_fmt(m['balanced_accuracy'])}")
         print(f"  Precision (error) : {_fmt(m['precision'])}")
         print(f"  Recall    (error) : {_fmt(m['recall'])}")
         print(f"  F1        (error) : {_fmt(m['f1'])}")
@@ -652,7 +652,7 @@ def _print_comparison(all_results: dict):
         print(f"  {level.upper()}-LEVEL CLASSIFICATION COMPARISON")
         print(sep)
         print(hdr()); print(div())
-        for metric in ("accuracy", "balanced_accuracy", "precision", "recall", "f1"):
+        for metric in ("precision", "recall", "f1"):#"accuracy", "balanced_accuracy", "precision", "recall", "f1"):
             print(row(metric, [all_results[c][level][metric] for c in conditions]))
         print()
 

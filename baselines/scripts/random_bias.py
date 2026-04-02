@@ -13,7 +13,7 @@ P_DELETION  is the probability that an error is a deletion.
 """
 
 TEST_FILE = "data/real_data/test.json"
-RESULTS_FILE = "baselines/predictions/random_bias_80_results.json"
+RESULTS_FILE = "baselines/predictions/random_bias_results.json"
 P_SENTENCE_ERRORS = [0.8, 0.1, 0.05, 0.025, 0.025]
 PHONES = ["ɡ", "ɔɪ", "aʊ", "ʃ", "ɪ", "dʒ", "ʊ", "ɑ", "b", "i", "æ", "ɝ", "n", "θ", "aɪ", "h", "v", "ɔ", "tʃ", "ɹ", "s", "u", "p", "f", "z", "j", "oʊ", "ʒ", "d", "ð", "ŋ", "k", "w", "m", "l", "ɛ", "eɪ", "t", "ʌ"]
 P_DELETION = 0.25

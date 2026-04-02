@@ -39,6 +39,6 @@ python training/loss_graph.py experiments/experiment_both/training_log.txt --out
 # Evaluation
 echo "Now evaluating results..."
 
-python evaluation/evaluation.py compare --conditions majority:baselines/predictions/majority_class_predictions.json random:baselines/predictions/random_bias_predictions.json real_only:experiments/experiment_real/predictions.json synthetic_only:experiments/experiment_synthetic/predictions.json both:experiments/experiment_both/predictions.json > scores.txt
+python evaluation/evaluation.py compare --conditions majority:baselines/predictions/majority_class_results.json random:baselines/predictions/random_bias_results.json real_only:experiments/experiment_real/predictions.json synthetic:experiments/experiment_synthetic/predictions.json both:experiments/experiment_both/predictions.json > scores.txt
 
 echo "Results written to scores.txt"
