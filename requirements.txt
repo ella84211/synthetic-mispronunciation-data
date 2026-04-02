@@ -1,8 +1,8 @@
-phonecodes==2.0.0
-datasets==4.5.0
-nltk==3.9.2
+phonecodes==1.2.3
+datasets==3.1.0
+nltk==3.9.1
 g2p-en==2.1.0
 tqdm==4.67.3
-scikit-learn==1.8.0
-torch==2.11.0
+scikit-learn==1.3.2
+torch==2.4.1
 matplotlib==3.10.8
