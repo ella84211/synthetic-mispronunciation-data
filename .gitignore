@@ -1,0 +1,41 @@
+# Virtual environments
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Data
+data/
+*.json
+
+# Results
+*experiments*/
+
+# speechocean762 repository
+speechocean762/
+
+# L2-ARCTIC repository
+l2arctic/
+
+# Temporary
+data_preprocessing/real_data/stats_real.py
+data_preprocessing/synthetic_data/stats_synthetic.py
+notes*
+*.txt
+*.tsv
+*.csv
+
+# Old files
+old*
+test*
+temp*
+training/train_with_vocab.py
+training/train_transformer*
+
+# Requirements
+!requirements.txt
+
+# .DS_Store
+.DS_Store
