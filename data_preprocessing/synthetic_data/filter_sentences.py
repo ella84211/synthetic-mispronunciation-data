@@ -2,7 +2,7 @@ import json
 import random
 
 
-REAL_DATA_FILE = "data/real_data/real_transcriptions.json"
+REAL_DATA_FILE = "data/real_data/transcriptions.json"
 SYNTHETIC_DATA_FILE = "data/synthetic_data/sentences.json"
 OUTPUT_FILE = "data/synthetic_data/filtered_sentences.json"
 
