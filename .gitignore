@@ -33,6 +33,7 @@ test*
 temp*
 training/train_with_vocab.py
 training/train_transformer*
+baselines/
 
 # Requirements
 !requirements.txt

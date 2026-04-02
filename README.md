@@ -122,20 +122,6 @@ This is the dataset of simple English sentences.
 
 https://huggingface.co/datasets/Jotschi/visual_genome-simple-en
 
-### Baselines
-
-Run the majority class baseline
-
-```
-python baselines/scripts/majority_class.py
-```
-
-Run the random bias baseline
-
-```
-python baselines/scripts/random_bias.py
-```
-
 ### Training
 
 Get the vocabulary

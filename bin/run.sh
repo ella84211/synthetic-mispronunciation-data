@@ -7,14 +7,6 @@ CONDA_BASE=$(conda info --base)
 source "$CONDA_BASE/etc/profile.d/conda.sh"
 conda activate mdd_env
 
-# Baselines
-echo "Running the baselines..."
-
-python baselines/scripts/majority_class.py
-python baselines/scripts/random_bias.py
-
-echo "Baseline results are located in baselines/predictions."
-
 # Training
 echo "Getting vocabulary..."
 python training/get_vocab.py
@@ -39,6 +31,6 @@ python training/loss_graph.py experiments/experiment_both/training_log.txt --out
 # Evaluation
 echo "Now evaluating results..."
 
-python evaluation/evaluation.py compare --conditions majority:baselines/predictions/majority_class_results.json random:baselines/predictions/random_bias_results.json real_only:experiments/experiment_real/predictions.json synthetic:experiments/experiment_synthetic/predictions.json both:experiments/experiment_both/predictions.json > scores.txt
+python evaluation/evaluation.py compare --conditions real_only:experiments/experiment_real/predictions.json synthetic:experiments/experiment_synthetic/predictions.json both:experiments/experiment_both/predictions.json > scores.txt
 
 echo "Results written to scores.txt"
