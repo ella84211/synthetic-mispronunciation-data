@@ -9,24 +9,26 @@ from format_data import format_dataset
 This script injects the synthetic errors into the transcriptions
 The oversample factor increases the probability that a sentence has an error
 Usage:
-    Default oversample factor: python make_pronunciation_errors.py
-    Custom oversample factor:  python make_pronunciation_errors.py factor
+    Default oversample factor: python make_pronunciation_errors.py output_directory
+    Custom oversample factor:  python make_pronunciation_errors.py output_directory oversample_factor
 """
 oversample_factor = 1
-if len(sys.argv) > 1:
+if len(sys.argv) > 2:
     try:
-        oversample_factor = float(sys.argv[1])
+        oversample_factor = float(sys.argv[2])
     except ValueError:
-        sys.exit("Usage: python make_pronunciation_errors.py oversample_factor")
+        sys.exit("Usage: python make_pronunciation_errors.py output_directory oversample_factor")
 
 INPUT_FILE = "data/synthetic_data/transcriptions_set*.json"
-OUTPUT_FILE = "data/synthetic_data/synthetic_transcriptions_set*.json"
+OUTPUT_DIR = sys.argv[1]
+OUTPUT_FILE = f"{OUTPUT_DIR}/synthetic_transcriptions_set*.json"
 REAL_DATA = "data/real_data/train.json"
 SETS = 5
 SEED = 3407
 SENTENCE_OVERSAMPLE_FACTOR = oversample_factor
 
 random.seed(SEED)
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 with open(REAL_DATA, "r", encoding="utf-8") as file:
     data = json.load(file)

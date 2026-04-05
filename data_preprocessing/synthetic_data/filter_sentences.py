@@ -9,8 +9,10 @@ OUTPUT_FILE = "data/synthetic_data/filtered_sentences.json"
 MIN_WORDS = 4
 MAX_WORDS = 7
 SETS = 5
-NUM_PER_SET = 4000
+NUM_PER_SET = 2000
 SEED = 3407
+
+random.seed(SEED)
 
 skips = [
     "simplified",

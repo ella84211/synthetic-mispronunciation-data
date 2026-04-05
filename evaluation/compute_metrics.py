@@ -35,16 +35,11 @@ Each object must have the following keys:
                                "reference" using edit distance to compute
                                phoneme error rate (PER).
 
-  --- Optional ---
-  "deletion_predictions"     : list of [i, j] index pairs (into the flat
-                               non-boundary phone sequence) indicating a
-                               predicted deletion between positions i and j.
-                               Omit or set to [] if not predicting deletions.
-
 USAGE
 -----
 Single condition:
-    python evaluate.py single --pred predictions.json
+    python evaluate.py single --pred predictions.json \\
+        --output per_sample_metrics.tsv
 
 Compare multiple conditions:
     python evaluate.py compare \\
@@ -54,8 +49,10 @@ Compare multiple conditions:
 """
 
 import json
+import csv
 import argparse
 from collections import defaultdict
+from tqdm import tqdm
 
 import numpy as np
 from sklearn.metrics import (
@@ -290,82 +287,6 @@ def evaluate_sequence_predictions(data: list) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Deletion localisation evaluation
-# ---------------------------------------------------------------------------
-
-def evaluate_deletions(data: list):
-    """
-    Evaluate deletion localisation predictions against ground truth deletions.
-
-    Ground truth deletions are identified from each word's 'mispronunciations'
-    list where pronounced == '<DEL>'. The after-index is the flat non-boundary
-    index of the phone immediately following the deletion in the pronounced
-    sequence.
-
-    Predicted deletions come from 'deletion_predictions': [[i, j], ...]
-    where j is the after-index in the flat non-boundary pronounced sequence.
-
-    Returns None if no deletion GT or predictions are found in the data.
-    """
-    has_deletion_preds = any(
-        "deletion_predictions" in s and s["deletion_predictions"]
-        for s in data
-    )
-    has_deletion_gt = any(
-        any(
-            mis.get("pronounced") == "<DEL>"
-            for word in s.get("words", [])
-            for mis in word.get("mispronunciations", [])
-        )
-        for s in data
-    )
-
-    if not has_deletion_gt and not has_deletion_preds:
-        return None
-
-    true_set = set()  # (sentence_id, after_index)
-    pred_set = set()
-
-    for sentence in data:
-        sid      = sentence["id"]
-        flat_idx = 0
-
-        for word in sentence.get("words", []):
-            pronounced = word.get("pronounced", [])
-            for mis in word.get("mispronunciations", []):
-                if mis.get("pronounced") == "<DEL>":
-                    after_idx = flat_idx + min(
-                        mis["index"], len(pronounced) - 1
-                    )
-                    true_set.add((sid, after_idx))
-            flat_idx += len(pronounced)
-
-        for pair in sentence.get("deletion_predictions", []):
-            if len(pair) == 2:
-                pred_set.add((sid, pair[1]))
-
-    tp = len(true_set & pred_set)
-    fp = len(pred_set - true_set)
-    fn = len(true_set - pred_set)
-
-    precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
-    recall    = tp / (tp + fn) if (tp + fn) > 0 else 0.0
-    f1        = (
-        2 * precision * recall / (precision + recall)
-        if (precision + recall) > 0 else 0.0
-    )
-
-    return {
-        "true_positives":  tp,
-        "false_positives": fp,
-        "false_negatives": fn,
-        "precision": precision,
-        "recall":    recall,
-        "f1":        f1,
-    }
-
-
-# ---------------------------------------------------------------------------
 # Sentence error count evaluation
 # ---------------------------------------------------------------------------
 
@@ -467,8 +388,7 @@ def evaluate(pred_path: str, verbose: bool = True) -> dict:
 
     Returns
     -------
-    Dict with keys "phone", "word", "sequence", and optionally
-    "deletion" and "sentence_counts".
+    Dict with keys "phone", "word", "sequence"
     """
     data = load_json(pred_path)
 
@@ -502,7 +422,6 @@ def evaluate(pred_path: str, verbose: bool = True) -> dict:
     phone_metrics    = compute_clf_metrics(all_phone_gt,  all_phone_pred,  "phone")
     word_metrics     = compute_clf_metrics(all_word_gt,   all_word_pred,   "word")
     sequence_metrics = evaluate_sequence_predictions(data)
-    #deletion_metrics = evaluate_deletions(data)
     sentence_metrics = evaluate_sentence_error_counts(data)
 
     results = {
@@ -510,8 +429,6 @@ def evaluate(pred_path: str, verbose: bool = True) -> dict:
         "word":     word_metrics,
         "sequence": sequence_metrics,
     }
-    # if deletion_metrics is not None:
-    #     results["deletion"] = deletion_metrics
     if sentence_metrics is not None:
         results["sentence_counts"] = sentence_metrics
 
@@ -570,19 +487,6 @@ def _print_report(results: dict):
               f"Del: {g['n_del']}  Ins: {g['n_ins']}")
         print()
 
-    if "deletion" in results:
-        d = results["deletion"]
-        print(sep)
-        print("  DELETION LOCALISATION")
-        print(sep)
-        print(f"  True positives  : {d['true_positives']}")
-        print(f"  False positives : {d['false_positives']}")
-        print(f"  False negatives : {d['false_negatives']}")
-        print(f"  Precision       : {_fmt(d['precision'])}")
-        print(f"  Recall          : {_fmt(d['recall'])}")
-        print(f"  F1              : {_fmt(d['f1'])}")
-        print()
-
     if "sentence_counts" in results:
         sc = results["sentence_counts"]
         print(sep)
@@ -600,7 +504,7 @@ def _print_report(results: dict):
 
 
 # ---------------------------------------------------------------------------
-# Multi-condition comparison (ablation table)
+# Multi-condition comparison (table)
 # ---------------------------------------------------------------------------
 
 def compare_conditions(conditions: dict, verbose: bool = True) -> dict:
@@ -668,18 +572,6 @@ def _print_comparison(all_results: dict):
             ))
     print()
 
-    if any("deletion" in r for r in all_results.values()):
-        print(sep)
-        print("  DELETION LOCALISATION COMPARISON")
-        print(sep)
-        print(hdr()); print(div())
-        for metric in ("precision", "recall", "f1"):
-            print(row(metric, [
-                all_results[c].get("deletion", {}).get(metric, float("nan"))
-                for c in conditions
-            ]))
-        print()
-
     if any("sentence_counts" in r for r in all_results.values()):
         print(sep)
         print("  SENTENCE ERROR COUNT COMPARISON")
@@ -695,6 +587,93 @@ def _print_comparison(all_results: dict):
     print(sep)
 
 
+
+# ---------------------------------------------------------------------------
+# Metrics per sample
+# ---------------------------------------------------------------------------
+
+def export_per_sample_tsv(pred_path: str, tsv_path: str):
+    """
+    Export per-sample metrics to a TSV file.
+
+    Columns:
+      id                     : sentence id
+      gt_sentence_errors     : ground truth error count
+      pred_sentence_errors   : predicted error count
+      sentence_error_correct : 1 if predicted count == gt count, else 0
+      gt_word_errors         : total gt word errors in sentence
+      pred_word_errors       : total predicted word errors in sentence
+      n_words                : number of words in sentence
+      word_accuracy          : fraction of words correctly classified (binary)
+      gt_phone_errors        : total gt phone errors in sentence
+      pred_phone_errors      : total predicted phone errors in sentence
+      n_phones               : number of phones in sentence
+      phone_accuracy         : fraction of phones correctly classified (binary)
+    """
+    data = load_json(pred_path)
+
+    fields = [
+        "id",
+        "gt_sentence_errors",
+        "pred_sentence_errors",
+        "sentence_error_correct",
+        "gt_word_errors",
+        "pred_word_errors",
+        "n_words",
+        "word_accuracy",
+        "gt_phone_errors",
+        "pred_phone_errors",
+        "n_phones",
+        "phone_accuracy",
+    ]
+
+    rows = []
+    for s in data:
+        sid = s["id"]
+
+        # Sentence level
+        gt_sent   = int(s["sentence errors"])
+        pred_sent = int(s["predicted sentence errors"])
+        sent_correct = 1 if gt_sent == pred_sent else 0
+
+        # Word level
+        gt_words   = [1 if int(e) > 0 else 0 for e in s["word errors"]]
+        pred_words = [1 if int(e) > 0 else 0 for e in s["predicted word errors"]]
+        n_words    = len(gt_words)
+        word_acc   = (sum(g == p for g, p in zip(gt_words, pred_words)) / n_words
+                      if n_words > 0 else 0.0)
+
+        # Phone level
+        gt_phones   = [int(x) for x in s["phone errors"]           if x != "<|>"]
+        pred_phones = [int(x) for x in s["predicted phone errors"] if x != "<|>"]
+        n_phones    = len(gt_phones)
+        phone_acc   = (sum(g == p for g, p in zip(gt_phones, pred_phones)) / n_phones
+                       if n_phones > 0 else 0.0)
+
+        rows.append({
+            "id":                    sid,
+            "gt_sentence_errors":    gt_sent,
+            "pred_sentence_errors":  pred_sent,
+            "sentence_error_correct": sent_correct,
+            "gt_word_errors":        sum(gt_words),
+            "pred_word_errors":      sum(pred_words),
+            "n_words":               n_words,
+            "word_accuracy":         round(word_acc, 4),
+            "gt_phone_errors":       sum(gt_phones),
+            "pred_phone_errors":     sum(pred_phones),
+            "n_phones":              n_phones,
+            "phone_accuracy":        round(phone_acc, 4),
+        })
+
+    with open(tsv_path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fields, delimiter="\t")
+        writer.writeheader()
+        writer.writerows(rows)
+
+    print(f"Per-sample metrics written to: {tsv_path}")
+    print(f"  {len(rows)} sentences")
+
+
 # ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
@@ -707,6 +686,7 @@ def main():
 
     single = subparsers.add_parser("single", help="Evaluate one predictions file.")
     single.add_argument("--pred", required=True, help="Predictions JSON path.")
+    single.add_argument("--output", required=True, help="File to save per-sample metrics TSV.")
 
     compare = subparsers.add_parser(
         "compare", help="Compare multiple prediction files side by side."
@@ -720,6 +700,7 @@ def main():
 
     if args.command == "single":
         evaluate(args.pred, verbose=True)
+        export_per_sample_tsv(args.pred, args.output)
     elif args.command == "compare":
         conditions = {}
         for item in args.conditions:
