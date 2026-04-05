@@ -24,8 +24,13 @@ synthetic-mispronunciation-data/
 │       └── validate.json
 │   └── synthetic_data/
 │       ├── filtered_sentences.json
+│       └── not_oversampled
+│           └── synthetic_transcriptions_set*.json
+│       └── oversampled_15
+│           └── synthetic_transcriptions_set*.json
+│       └── oversampled_2
+│           └── synthetic_transcriptions_set*.json
 │       ├── sentences.json
-│       ├── synthetic_transcriptions_set*.json
 │       ├── transcriptions.json
 │       └── transcriptions_set*.json
 ├── data_preprocessing/
@@ -39,10 +44,13 @@ synthetic-mispronunciation-data/
 │       └── make_pronunciation_errors.py
 │   └── format_data.py
 ├── evaluation/
-│   └── evaluation.py
+│   ├── compute_metrics.py
+│   └── significance.py
 ├── training/
 │   ├── get_vocab.py
-│   └── train.py
+│   ├── train_gru.py
+│   ├── train_lstm.py
+│   └── train_transformer.py
 ├── .gitignore
 ├── README.md
 └── requirements.txt
@@ -78,11 +86,13 @@ chmod +x bin/run.sh
 ./bin/run.sh
 ```
 
-## Or manually run the code
+## Or manually set up and run the code
 
-Activate the environment:
+Create and activate the environment:
 ```
+conda create -n mdd_env python=3.11 -y
 conda activate mdd_env
+pip install -r requirements.txt
 ```
 
 ### Preprocess the speechocean762 data
@@ -113,7 +123,9 @@ Run the scripts to get and preprocess the data
 python data_preprocessing/synthetic_data/get_sentences.py
 python data_preprocessing/synthetic_data/filter_sentences.py
 python data_preprocessing/synthetic_data/make_ipa_transcriptions.py
-python data_preprocessing/synthetic_data/make_pronunciation_errors.py
+python data_preprocessing/synthetic_data/make_pronunciation_errors.py data/synthetic_data/not_oversampled
+python data_preprocessing/synthetic_data/make_pronunciation_errors.py data/synthetic_data/oversampled_15 1.5
+python data_preprocessing/synthetic_data/make_pronunciation_errors.py data/synthetic_data/oversampled_2 2
 ```
 
 visual_genome-simple-en data:
@@ -129,20 +141,24 @@ Get the vocabulary
 python training/get_vocab.py
 ```
 
-Train the model (this example uses the train split from speechocean762)
+Train the models (these examples use the train split from speechocean762)
 ```
-python training/train.py train --train data/real_data/train.json --output experiments/experiment
+python training/train_bilstm.py train --train data/real_data/train.json --output experiments/bilstm
+python training/train_transformer.py train --train data/real_data/train.json --output experiments/transformer
+python training/train_gru.py train --train data/real_data/train.json --output experiments/gru
 ```
 
 Create the loss and scores graphs
 
 ```
-python training/loss_graph.py experiments/experiment/training_log.txt --output_dir experiments/experiment
+python training/loss_graph.py experiments/bilstm/training_log.txt --output_dir experiments/bilstm
+python training/loss_graph.py experiments/transformer/training_log.txt --output_dir experiments/transformer
+python training/loss_graph.py experiments/gru/training_log.txt --output_dir experiments/gru
 ```
 
 ### Evaluation
 
-Run the evaluation pipeline on the predictions file
+Run the evaluation pipeline on the predictions files
 ```
-python evaluation/evaluation.py single --pred experiments/experiment/predictions.json
+python evaluation/compute_metrics.py compare --conditions bilstm:experiments/bilstm/predictions.json transformer:experiments/transformer/predictions.json gru:experiments/gru/predictions.json
 ```

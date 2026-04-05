@@ -43,7 +43,9 @@ python data_preprocessing/synthetic_data/filter_sentences.py
 echo "Making the IPA transcriptions and injecting errors..."
 
 python data_preprocessing/synthetic_data/make_ipa_transcriptions.py
-python data_preprocessing/synthetic_data/make_pronunciation_errors.py
+python data_preprocessing/synthetic_data/make_pronunciation_errors.py data/synthetic_data/not_oversampled
+python data_preprocessing/synthetic_data/make_pronunciation_errors.py data/synthetic_data/oversampled_15 1.5
+python data_preprocessing/synthetic_data/make_pronunciation_errors.py data/synthetic_data/oversampled_2 2
 
 echo "Preprocessed the synthetic data. Located in data/synthetic_data."
 
