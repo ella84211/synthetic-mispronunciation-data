@@ -13,9 +13,11 @@ python training/get_vocab.py
 
 
 # BiLSTM
-echo "\\n------------------------------"
+echo "
+------------------------------"
 echo "BiLSTM"
-echo "------------------------------\\n"
+echo "------------------------------
+"
 
 echo "Training model on only real data..."
 python training/train_bilstm.py train --train data/real_data/train.json --output experiments/bilstm_real
@@ -48,10 +50,12 @@ python evaluation/significance.py --pred_a experiments/bilstm_real/predictions.j
 echo "Results written to bilstm_significance.txt"
 
 
-# Transforer
-echo "\\n------------------------------"
+# Transformer
+echo "
+------------------------------"
 echo "Transformer"
-echo "------------------------------\\n"
+echo "------------------------------
+"
 
 echo "Training model on only real data..."
 python training/train_transformer.py train --train data/real_data/train.json --output experiments/transformer_real
@@ -85,9 +89,11 @@ echo "Results written to transformer_significance.txt"
 
 
 # GRU
-echo "\\n------------------------------"
+echo "
+------------------------------"
 echo "GRU"
-echo "------------------------------\\n"
+echo "------------------------------
+"
 
 echo "Training model on only real data..."
 python training/train_gru.py train --train data/real_data/train.json --output experiments/gru_real
