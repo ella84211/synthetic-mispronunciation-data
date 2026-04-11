@@ -52,11 +52,12 @@ do
 
     echo "Now getting per-sample scores..."
     mkdir -p results/${model}_real
-    python evaluation/per_sample.py --input experiments/${model}_real/predictions.json --output results/${model}_real/per_sample_scores.txt
+    python evaluation/per_sample.py --input experiments/${model}_real/predictions.json --output results/${model}_real/per_sample_scores.tsv
+    echo "Per-sample scores written to results/${model}_real/per_sample_scores.tsv
     for ((i=1; i<6; i++))
     do
-        python evaluation/per_sample.py --input experiments/${model}_$i/predictions.json --output results/${model}_$i/per_sample_scores.txt
-        echo "Per-sample scores written to results/${model}_$i/per_sample_scores.txt"
+        python evaluation/per_sample.py --input experiments/${model}_$i/predictions.json --output results/${model}_$i/per_sample_scores.tsv
+        echo "Per-sample scores written to results/${model}_$i/per_sample_scores.tsv"
     done
 done
 
