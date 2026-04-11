@@ -6,15 +6,9 @@ This repository is for a research project exploring the effect of synthetically 
 
 ```
 synthetic-mispronunciation-data/
-├── baselines/
-│   └── predictions/
-│       ├── majority_class_results.json
-│       └── random_bias_80_results.json
-│   └── scripts/
-│       ├── majority_class.py
-│       └── random_bias.py
 ├── bin/
-│   └── install.sh
+│   ├── install.sh
+│   └── run.sh
 ├── data/
 │   └── real_data/
 │       ├── scores.json
@@ -24,13 +18,8 @@ synthetic-mispronunciation-data/
 │       └── validate.json
 │   └── synthetic_data/
 │       ├── filtered_sentences.json
-│       └── not_oversampled
-│           └── synthetic_transcriptions_set*.json
-│       └── oversampled_15
-│           └── synthetic_transcriptions_set*.json
-│       └── oversampled_2
-│           └── synthetic_transcriptions_set*.json
 │       ├── sentences.json
+│       ├── synthetic_transcriptions_set*.json
 │       ├── transcriptions.json
 │       └── transcriptions_set*.json
 ├── data_preprocessing/
@@ -100,7 +89,7 @@ pip install -r requirements.txt
 Get the speechocean762 data
 ```
 git clone https://github.com/jimbozhang/speechocean762.git
-mkdir data data/real_data
+mkdir -p data/real_data
 cp speechocean762/resource/scores.json data/real_data
 ```
 
@@ -123,9 +112,7 @@ Run the scripts to get and preprocess the data
 python data_preprocessing/synthetic_data/get_sentences.py
 python data_preprocessing/synthetic_data/filter_sentences.py
 python data_preprocessing/synthetic_data/make_ipa_transcriptions.py
-python data_preprocessing/synthetic_data/make_pronunciation_errors.py data/synthetic_data/not_oversampled
-python data_preprocessing/synthetic_data/make_pronunciation_errors.py data/synthetic_data/oversampled_15 1.5
-python data_preprocessing/synthetic_data/make_pronunciation_errors.py data/synthetic_data/oversampled_2 2
+python data_preprocessing/synthetic_data/make_pronunciation_errors.py data/synthetic_data
 ```
 
 visual_genome-simple-en data:

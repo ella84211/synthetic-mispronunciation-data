@@ -23,7 +23,7 @@ echo "Environment created! Now getting the data."
 echo "Getting the speechocean762 data..."
 
 git clone https://github.com/jimbozhang/speechocean762.git
-mkdir data data/real_data
+mkdir -p data/real_data
 cp speechocean762/resource/scores.json data/real_data
 
 echo "Now preprocessing the speechocean762 data..."
@@ -43,9 +43,7 @@ python data_preprocessing/synthetic_data/filter_sentences.py
 echo "Making the IPA transcriptions and injecting errors..."
 
 python data_preprocessing/synthetic_data/make_ipa_transcriptions.py
-python data_preprocessing/synthetic_data/make_pronunciation_errors.py data/synthetic_data/not_oversampled
-python data_preprocessing/synthetic_data/make_pronunciation_errors.py data/synthetic_data/oversampled_15 1.5
-python data_preprocessing/synthetic_data/make_pronunciation_errors.py data/synthetic_data/oversampled_2 2
+python data_preprocessing/synthetic_data/make_pronunciation_errors.py data/synthetic_data/
 
 echo "Preprocessed the synthetic data. Located in data/synthetic_data."
 

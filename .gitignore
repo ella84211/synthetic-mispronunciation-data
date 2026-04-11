@@ -11,7 +11,8 @@ data/
 *.json
 
 # Results
-*experiments*/
+*experiments*
+*results*
 
 # speechocean762 repository
 speechocean762/

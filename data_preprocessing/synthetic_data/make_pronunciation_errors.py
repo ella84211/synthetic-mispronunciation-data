@@ -13,6 +13,10 @@ Usage:
     Custom oversample factor:  python make_pronunciation_errors.py output_directory oversample_factor
 """
 oversample_factor = 1
+if len(sys.argv) == 1:
+    OUTPUT_DIR = sys.argv[1]
+else:
+    OUTPUT_DIR = "data/synthetic_data"
 if len(sys.argv) > 2:
     try:
         oversample_factor = float(sys.argv[2])
@@ -20,7 +24,6 @@ if len(sys.argv) > 2:
         sys.exit("Usage: python make_pronunciation_errors.py output_directory oversample_factor")
 
 INPUT_FILE = "data/synthetic_data/transcriptions_set*.json"
-OUTPUT_DIR = sys.argv[1]
 OUTPUT_FILE = f"{OUTPUT_DIR}/synthetic_transcriptions_set*.json"
 REAL_DATA = "data/real_data/train.json"
 SETS = 5
