@@ -14,130 +14,51 @@ mkdir -p results/
 echo "Getting vocabulary..."
 python training/get_vocab.py
 
-# BiLSTM
-echo "
-------------------------------"
-echo "BiLSTM"
-echo "------------------------------
-"
+for model in bilstm transformer gru
+do
+    echo "
+    ------------------------------"
+    echo "Now training ${model}"
+    echo "------------------------------
+    "
 
-echo "Training model on only real data..."
-python training/train_bilstm.py train --train data/real_data/train.json --output experiments/bilstm_real
+    echo "Training ${model} on only real data..."
+    python training/train_${model}.py train --train data/real_data/train.json --output experiments/${model}_real
 
-# One set of synthetic data
-echo "Training model on both real and synthetic data..."
-python training/train_bilstm.py train --train data/real_data/train.json data/synthetic_data/synthetic_transcriptions_set1.json --output experiments/bilstm_1
-python training/train_bilstm.py train --train data/real_data/train.json data/synthetic_data/synthetic_transcriptions_set1.json data/synthetic_data/synthetic_transcriptions_set2.json --output experiments/bilstm_2
-python training/train_bilstm.py train --train data/real_data/train.json data/synthetic_data/synthetic_transcriptions_set1.json data/synthetic_data/synthetic_transcriptions_set2.json data/synthetic_data/synthetic_transcriptions_set3.json --output experiments/bilstm_3
-python training/train_bilstm.py train --train data/real_data/train.json data/synthetic_data/synthetic_transcriptions_set1.json data/synthetic_data/synthetic_transcriptions_set2.json data/synthetic_data/synthetic_transcriptions_set3.json data/synthetic_data/synthetic_transcriptions_set4.json --output experiments/bilstm_4
-python training/train_bilstm.py train --train data/real_data/train.json data/synthetic_data/synthetic_transcriptions_set1.json data/synthetic_data/synthetic_transcriptions_set2.json data/synthetic_data/synthetic_transcriptions_set3.json data/synthetic_data/synthetic_transcriptions_set4.json data/synthetic_data/synthetic_transcriptions_set5.json --output experiments/bilstm_5
-echo "Finished training on synthetic data."
+    echo "Training model on both real and synthetic data..."
+    python training/train_${model}.py train --train data/real_data/train.json data/synthetic_data/synthetic_transcriptions_set1.json --output experiments/${model}_1
+    python training/train_${model}.py train --train data/real_data/train.json data/synthetic_data/synthetic_transcriptions_set1.json data/synthetic_data/synthetic_transcriptions_set2.json --output experiments/${model}_2
+    python training/train_${model}.py train --train data/real_data/train.json data/synthetic_data/synthetic_transcriptions_set1.json data/synthetic_data/synthetic_transcriptions_set2.json data/synthetic_data/synthetic_transcriptions_set3.json --output experiments/${model}_3
+    python training/train_${model}.py train --train data/real_data/train.json data/synthetic_data/synthetic_transcriptions_set1.json data/synthetic_data/synthetic_transcriptions_set2.json data/synthetic_data/synthetic_transcriptions_set3.json data/synthetic_data/synthetic_transcriptions_set4.json --output experiments/${model}_4
+    python training/train_${model}.py train --train data/real_data/train.json data/synthetic_data/synthetic_transcriptions_set1.json data/synthetic_data/synthetic_transcriptions_set2.json data/synthetic_data/synthetic_transcriptions_set3.json data/synthetic_data/synthetic_transcriptions_set4.json data/synthetic_data/synthetic_transcriptions_set5.json --output experiments/${model}_5
+    echo "Finished training on synthetic data."
 
-# Get loss graphs
-echo "Getting loss graphs..."
-python training/loss_graph.py experiments/bilstm_real/training_log.txt --output_dir experiments/bilstm_real
-python training/loss_graph.py experiments/bilstm_1/training_log.txt --output_dir experiments/bilstm_1
-python training/loss_graph.py experiments/bilstm_2/training_log.txt --output_dir experiments/bilstm_2
-python training/loss_graph.py experiments/bilstm_3/training_log.txt --output_dir experiments/bilstm_3
-python training/loss_graph.py experiments/bilstm_4/training_log.txt --output_dir experiments/bilstm_4
-python training/loss_graph.py experiments/bilstm_5/training_log.txt --output_dir experiments/bilstm_5
+    # Get loss graphs
+    echo "Getting loss graphs..."
+    python training/loss_graph.py experiments/${model}_real/training_log.txt --output_dir experiments/${model}_real
+    for ((i=1; i<6; i++))
+    do
+        python training/loss_graph.py experiments/${model}_$i/training_log.txt --output_dir experiments/${model}_$i
+    done
 
-# Evaluation
-echo "Now getting significance between real data only and synthetic data..."
-python evaluation/significance.py --pred_a experiments/bilstm_real/predictions.json --pred_b experiments/bilstm_1/predictions.json > results/bilstm_1_significance.txt
-echo "Results written to results/bilstm_1_significance.txt"
-python evaluation/significance.py --pred_a experiments/bilstm_real/predictions.json --pred_b experiments/bilstm_2/predictions.json > results/bilstm_2_significance.txt
-echo "Results written to results/bilstm_2_significance.txt"
-python evaluation/significance.py --pred_a experiments/bilstm_real/predictions.json --pred_b experiments/bilstm_3/predictions.json > results/bilstm_3_significance.txt
-echo "Results written to results/bilstm_3_significance.txt"
-python evaluation/significance.py --pred_a experiments/bilstm_real/predictions.json --pred_b experiments/bilstm_4/predictions.json > results/bilstm_4_significance.txt
-echo "Results written to results/bilstm_4_significance.txt"
-python evaluation/significance.py --pred_a experiments/bilstm_real/predictions.json --pred_b experiments/bilstm_5/predictions.json > results/bilstm_5_significance.txt
-echo "Results written to results/bilstm_5_significance.txt"
+    # Evaluation
+    echo "Now getting significance between real data only and synthetic data..."
+    for ((i=1; i<6; i++))
+    do
+        mkdir -p results/${model}_$i
+        python evaluation/significance.py --pred_a experiments/${model}_real/predictions.json --pred_b experiments/${model}_$i/predictions.json > results/${model}_$i/significance.txt
+        echo "Results written to results/${model}_$i/significance.txt"
+    done
 
-
-# Transformer
-echo "
-------------------------------"
-echo "Transformer"
-echo "------------------------------
-"
-
-echo "Training model on only real data..."
-python training/train_transformer.py train --train data/real_data/train.json --output experiments/transformer_real
-
-# No oversampling
-echo "Training model on both real and synthetic data..."
-python training/train_transformer.py train --train data/real_data/train.json data/synthetic_data/synthetic_transcriptions_set1.json --output experiments/transformer_1
-python training/train_transformer.py train --train data/real_data/train.json data/synthetic_data/synthetic_transcriptions_set1.json data/synthetic_data/synthetic_transcriptions_set2.json --output experiments/transformer_2
-python training/train_transformer.py train --train data/real_data/train.json data/synthetic_data/synthetic_transcriptions_set1.json data/synthetic_data/synthetic_transcriptions_set2.json data/synthetic_data/synthetic_transcriptions_set3.json --output experiments/transformer_3
-python training/train_transformer.py train --train data/real_data/train.json data/synthetic_data/synthetic_transcriptions_set1.json data/synthetic_data/synthetic_transcriptions_set2.json data/synthetic_data/synthetic_transcriptions_set3.json data/synthetic_data/synthetic_transcriptions_set4.json --output experiments/transformer_4
-python training/train_transformer.py train --train data/real_data/train.json data/synthetic_data/synthetic_transcriptions_set1.json data/synthetic_data/synthetic_transcriptions_set2.json data/synthetic_data/synthetic_transcriptions_set3.json data/synthetic_data/synthetic_transcriptions_set4.json data/synthetic_data/synthetic_transcriptions_set5.json --output experiments/transformer_5
-echo "Finished training on synthetic data."
-
-# Get loss graphs
-echo "Getting loss graphs..."
-python training/loss_graph.py experiments/transformer_real/training_log.txt --output_dir experiments/transformer_real
-python training/loss_graph.py experiments/transformer_1/training_log.txt --output_dir experiments/transformer_1
-python training/loss_graph.py experiments/transformer_2/training_log.txt --output_dir experiments/transformer_2
-python training/loss_graph.py experiments/transformer_3/training_log.txt --output_dir experiments/transformer_3
-python training/loss_graph.py experiments/transformer_4/training_log.txt --output_dir experiments/transformer_4
-python training/loss_graph.py experiments/transformer_5/training_log.txt --output_dir experiments/transformer_5
-
-# Evaluation
-echo "Now getting significance between real data only and synthetic data..."
-python evaluation/significance.py --pred_a experiments/transformer_real/predictions.json --pred_b experiments/transformer_1/predictions.json > results/transformer_1_significance.txt
-echo "Results written to results/transformer_1_significance.txt"
-python evaluation/significance.py --pred_a experiments/transformer_real/predictions.json --pred_b experiments/transformer_2/predictions.json > results/transformer_2_significance.txt
-echo "Results written to results/transformer_2_significance.txt"
-python evaluation/significance.py --pred_a experiments/transformer_real/predictions.json --pred_b experiments/transformer_3/predictions.json > results/transformer_3_significance.txt
-echo "Results written to results/transformer_3_significance.txt"
-python evaluation/significance.py --pred_a experiments/transformer_real/predictions.json --pred_b experiments/transformer_4/predictions.json > results/transformer_4_significance.txt
-echo "Results written to results/transformer_4_significance.txt"
-python evaluation/significance.py --pred_a experiments/transformer_real/predictions.json --pred_b experiments/transformer_5/predictions.json > results/transformer_5_significance.txt
-echo "Results written to results/transformer_5_significance.txt"
-
-
-# GRU
-echo "
-------------------------------"
-echo "GRU"
-echo "------------------------------
-"
-
-echo "Training model on only real data..."
-python training/train_gru.py train --train data/real_data/train.json --output experiments/gru_real
-
-# No oversampling
-echo "Training model on both real and synthetic data..."
-python training/train_gru.py train --train data/real_data/train.json data/synthetic_data/synthetic_transcriptions_set1.json --output experiments/gru_1
-python training/train_gru.py train --train data/real_data/train.json data/synthetic_data/synthetic_transcriptions_set1.json data/synthetic_data/synthetic_transcriptions_set2.json --output experiments/gru_2
-python training/train_gru.py train --train data/real_data/train.json data/synthetic_data/synthetic_transcriptions_set1.json data/synthetic_data/synthetic_transcriptions_set2.json data/synthetic_data/synthetic_transcriptions_set3.json --output experiments/gru_3
-python training/train_gru.py train --train data/real_data/train.json data/synthetic_data/synthetic_transcriptions_set1.json data/synthetic_data/synthetic_transcriptions_set2.json data/synthetic_data/synthetic_transcriptions_set3.json data/synthetic_data/synthetic_transcriptions_set4.json --output experiments/gru_4
-python training/train_gru.py train --train data/real_data/train.json data/synthetic_data/synthetic_transcriptions_set1.json data/synthetic_data/synthetic_transcriptions_set2.json data/synthetic_data/synthetic_transcriptions_set3.json data/synthetic_data/synthetic_transcriptions_set4.json data/synthetic_data/synthetic_transcriptions_set5.json --output experiments/gru_5
-echo "Finished training on synthetic data."
-
-# Get loss graphs
-echo "Getting loss graphs..."
-python training/loss_graph.py experiments/gru_real/training_log.txt --output_dir experiments/gru_real
-python training/loss_graph.py experiments/gru_1/training_log.txt --output_dir experiments/gru_1
-python training/loss_graph.py experiments/gru_2/training_log.txt --output_dir experiments/gru_2
-python training/loss_graph.py experiments/gru_3/training_log.txt --output_dir experiments/gru_3
-python training/loss_graph.py experiments/gru_4/training_log.txt --output_dir experiments/gru_4
-python training/loss_graph.py experiments/gru_5/training_log.txt --output_dir experiments/gru_5
-
-# Evaluation
-echo "Now getting significance between real data only and non-oversampled synthetic data..."
-python evaluation/significance.py --pred_a experiments/gru_real/predictions.json --pred_b experiments/gru_1/predictions.json > results/gru_1_significance.txt
-echo "Results written to results/gru_1_significance.txt"
-python evaluation/significance.py --pred_a experiments/gru_real/predictions.json --pred_b experiments/gru_2/predictions.json > results/gru_2_significance.txt
-echo "Results written to results/gru_2_significance.txt"
-python evaluation/significance.py --pred_a experiments/gru_real/predictions.json --pred_b experiments/gru_3/predictions.json > results/gru_3_significance.txt
-echo "Results written to results/gru_3_significance.txt"
-python evaluation/significance.py --pred_a experiments/gru_real/predictions.json --pred_b experiments/gru_4/predictions.json > results/gru_4_significance.txt
-echo "Results written to results/gru_4_significance.txt"
-python evaluation/significance.py --pred_a experiments/gru_real/predictions.json --pred_b experiments/gru_5/predictions.json > results/gru_5_significance.txt
-echo "Results written to results/gru_5_significance.txt"
+    echo "Now getting per-sample scores..."
+    mkdir -p results/${model}_real
+    python evaluation/per_sample.py --input experiments/${model}_real/predictions.json --output results/${model}_real/per_sample_scores.txt
+    for ((i=1; i<6; i++))
+    do
+        python evaluation/per_sample.py --input experiments/${model}_$i/predictions.json --output results/${model}_$i/per_sample_scores.txt
+        echo "Per-sample scores written to results/${model}_$i/per_sample_scores.txt"
+    done
+done
 
 
 # All
@@ -152,5 +73,5 @@ python evaluation/compute_metrics.py compare --conditions \
     gru_r:experiments/gru_real/predictions.json gru_1:experiments/gru_1/predictions.json \
     gru_2:experiments/gru_2/predictions.json gru_3:experiments/gru_3/predictions.json \
     gru_4:experiments/gru_4/predictions.json gru_5:experiments/gru_5/predictions.json \
-    > results/scores.txt
-echo "Metrics written to results/scores.txt"
+    > results/all_scores.txt
+echo "Metrics written to results/all_scores.txt"

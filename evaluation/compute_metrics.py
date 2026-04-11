@@ -587,93 +587,6 @@ def _print_comparison(all_results: dict):
     print(sep)
 
 
-
-# ---------------------------------------------------------------------------
-# Metrics per sample
-# ---------------------------------------------------------------------------
-
-def export_per_sample_tsv(pred_path: str, tsv_path: str):
-    """
-    Export per-sample metrics to a TSV file.
-
-    Columns:
-      id                     : sentence id
-      gt_sentence_errors     : ground truth error count
-      pred_sentence_errors   : predicted error count
-      sentence_error_correct : 1 if predicted count == gt count, else 0
-      gt_word_errors         : total gt word errors in sentence
-      pred_word_errors       : total predicted word errors in sentence
-      n_words                : number of words in sentence
-      word_accuracy          : fraction of words correctly classified (binary)
-      gt_phone_errors        : total gt phone errors in sentence
-      pred_phone_errors      : total predicted phone errors in sentence
-      n_phones               : number of phones in sentence
-      phone_accuracy         : fraction of phones correctly classified (binary)
-    """
-    data = load_json(pred_path)
-
-    fields = [
-        "id",
-        "gt_sentence_errors",
-        "pred_sentence_errors",
-        "sentence_error_correct",
-        "gt_word_errors",
-        "pred_word_errors",
-        "n_words",
-        "word_accuracy",
-        "gt_phone_errors",
-        "pred_phone_errors",
-        "n_phones",
-        "phone_accuracy",
-    ]
-
-    rows = []
-    for s in data:
-        sid = s["id"]
-
-        # Sentence level
-        gt_sent   = int(s["sentence errors"])
-        pred_sent = int(s["predicted sentence errors"])
-        sent_correct = 1 if gt_sent == pred_sent else 0
-
-        # Word level
-        gt_words   = [1 if int(e) > 0 else 0 for e in s["word errors"]]
-        pred_words = [1 if int(e) > 0 else 0 for e in s["predicted word errors"]]
-        n_words    = len(gt_words)
-        word_acc   = (sum(g == p for g, p in zip(gt_words, pred_words)) / n_words
-                      if n_words > 0 else 0.0)
-
-        # Phone level
-        gt_phones   = [int(x) for x in s["phone errors"]           if x != "<|>"]
-        pred_phones = [int(x) for x in s["predicted phone errors"] if x != "<|>"]
-        n_phones    = len(gt_phones)
-        phone_acc   = (sum(g == p for g, p in zip(gt_phones, pred_phones)) / n_phones
-                       if n_phones > 0 else 0.0)
-
-        rows.append({
-            "id":                    sid,
-            "gt_sentence_errors":    gt_sent,
-            "pred_sentence_errors":  pred_sent,
-            "sentence_error_correct": sent_correct,
-            "gt_word_errors":        sum(gt_words),
-            "pred_word_errors":      sum(pred_words),
-            "n_words":               n_words,
-            "word_accuracy":         round(word_acc, 4),
-            "gt_phone_errors":       sum(gt_phones),
-            "pred_phone_errors":     sum(pred_phones),
-            "n_phones":              n_phones,
-            "phone_accuracy":        round(phone_acc, 4),
-        })
-
-    with open(tsv_path, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=fields, delimiter="\t")
-        writer.writeheader()
-        writer.writerows(rows)
-
-    print(f"Per-sample metrics written to: {tsv_path}")
-    print(f"  {len(rows)} sentences")
-
-
 # ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
@@ -686,7 +599,6 @@ def main():
 
     single = subparsers.add_parser("single", help="Evaluate one predictions file.")
     single.add_argument("--pred", required=True, help="Predictions JSON path.")
-    single.add_argument("--output", required=True, help="File to save per-sample metrics TSV.")
 
     compare = subparsers.add_parser(
         "compare", help="Compare multiple prediction files side by side."
@@ -700,7 +612,6 @@ def main():
 
     if args.command == "single":
         evaluate(args.pred, verbose=True)
-        export_per_sample_tsv(args.pred, args.output)
     elif args.command == "compare":
         conditions = {}
         for item in args.conditions:
